@@ -21,3 +21,11 @@ type Tracer interface {
 func New(w io.Writer) Tracer {
 	return &tracer{out: w}
 }
+
+type nilTracer struct{}
+
+func (t *nilTracer) Trace(a ...interface{}) {}
+
+func Off() Tracer {
+	return &nilTracer{}
+}

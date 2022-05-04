@@ -130,3 +130,4 @@ dist
 
 dist/
 avatars/
+src/domainfinder/lib/*

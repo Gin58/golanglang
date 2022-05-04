@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-		err := godotenv.Load("../../.env")
+	err := godotenv.Load("../../.env")
 	if err != nil {
 		fmt.Printf("読み込み出来ませんでした: %v", err)
 	} 
@@ -22,10 +22,10 @@ func main() {
 		word := s.Text()
 		syns, err := thesaurus.Synonyms(word)
 		if err != nil {
-			log.Fatalln("%qの類語検索エラー: %v", word, err)
+			log.Fatalf("%qの類語検索エラー: %v", word, err)
 		}
 		if len(syns) == 0 {
-			log.Fatalln("類語なし")
+			log.Fatalf("%qの類語なし", word)
 		}
 		for _, syn := range syns {
 			fmt.Println(syn)

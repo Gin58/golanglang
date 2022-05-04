@@ -11,7 +11,9 @@ import (
 )
 
 var tlds = []string{"com", "net"}
-const allowChars = "abcdefghijklmnopqrstuwxyz0123456789_-"
+
+const allowedChars = "abcdefghijklmnopqrstuvwxyz0123456789_-"
+
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 	s := bufio.NewScanner(os.Stdin)
@@ -22,7 +24,7 @@ func main() {
 			if unicode.IsSpace(r) {
 				r = '-'
 			}
-			if !strings.ContainsRune(allowChars, r) {
+			if !strings.ContainsRune(allowedChars, r) {
 				continue
 			}
 			newText = append(newText, r)

@@ -16,6 +16,8 @@ import (
 	"github.com/stretchr/objx"
 )
 
+var avatars Avatar = UseFileSystemAvatar
+
 type templateHandler struct {
 	once     sync.Once
 	filename string
@@ -45,10 +47,13 @@ func main() {
 	gomniauth.WithProviders(
 		google.New(googleId, googleSecret, "http://localhost:8887/auth/callback/google"),
 	)
-	r := newRoom(UseGravatar)
+	r := newRoom()
 	r.tracer = trace.New(os.Stdout)
 	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
 	http.Handle("/login", &templateHandler{filename: "login.html"})
+	http.Handle("/upload", &templateHandler{filename: "upload.html"})
+	http.Handle("/avatars/", http.StripPrefix("/avatars/", http.FileServer(http.Dir("./avatars"))))
+	http.HandleFunc("/uploader", uploaderHandler)
 	http.HandleFunc("/auth/", loginHandler)
 	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, &http.Cookie{

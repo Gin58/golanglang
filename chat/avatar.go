@@ -1,38 +1,44 @@
 package main
 
 import (
-	"crypto/md5"
 	"errors"
-	"fmt"
-	"io"
-	"strings"
+	"io/ioutil"
+	"path/filepath"
 )
 
 var ErrNoAvatarURL = errors.New("chat: アバターURLを取得できません。")
 
 type Avatar interface {
-	GetAvatarURL(c *client) (string, error)
+	GetAvatarURL(ChatUser) (string, error)
 }
 
 type AuthAvatar struct{}
 var UseAuthAvatar AuthAvatar
-func (AuthAvatar) GetAvatarURL(c *client) (string, error) {
-	if url, ok := c.userData["avatar_url"]; ok {
-		if urlStr, ok := url.(string); ok {
-			return urlStr, nil
-		}
+func (AuthAvatar) GetAvatarURL(u ChatUser) (string, error) {
+	url := u.AvatarURL()
+	if url != "" {
+		return url, nil
 	}
 	return "", ErrNoAvatarURL
 }
 
 type GravatarAvatar struct{}
 var UseGravatar GravatarAvatar
-func (GravatarAvatar) GetAvatarURL(c *client) (string, error) {
-	if email, ok := c.userData["email"]; ok {
-		if emailStr, ok := email.(string); ok {
-			m := md5.New()
-			io.WriteString(m, strings.ToLower(emailStr))
-			return fmt.Sprintf("//www.gravatar.com/avatar/%x", m.Sum(nil)), nil
+func (GravatarAvatar) GetAvatarURL(u ChatUser) (string, error) {
+	return "//www.gravatar.com/avatar/" + u.UniqueID(), nil
+}
+
+type FileSystemAvatar struct{}
+var UseFileSystemAvatar FileSystemAvatar
+func(FileSystemAvatar) GetAvatarURL(u ChatUser) (string, error) {
+	if files, err := ioutil.ReadDir("avatars"); err == nil {
+		for _, file := range files {
+			if file.IsDir() {
+				continue
+			}
+			if match, _ := filepath.Match(u.UniqueID() + "*", file.Name()); match {
+				return "/avatars/" + file.Name(), nil
+			}
 		}
 	}
 	return "", ErrNoAvatarURL
